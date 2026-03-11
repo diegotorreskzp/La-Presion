@@ -493,6 +493,10 @@ img {
     gap: 16px;
     width: max-content;
     animation: autoScroll 30s linear infinite;
+    -webkit-animation: autoScroll 30s linear infinite;
+    will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .carrusel:hover .carrusel__track {
@@ -534,8 +538,13 @@ img {
 }
 
 @keyframes autoScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% { transform: translateX(0) translateZ(0); }
+    100% { transform: translateX(-50%) translateZ(0); }
+}
+
+@-webkit-keyframes autoScroll {
+    0% { -webkit-transform: translateX(0) translateZ(0); }
+    100% { -webkit-transform: translateX(-50%) translateZ(0); }
 }
 
 /* === MÚSICA / SPOTIFY === */
