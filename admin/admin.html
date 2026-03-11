@@ -4,781 +4,624 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin — La Presión</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
             --bg: #0a0a0a;
-            --surface: #141414;
-            --surface2: #1e1e1e;
+            --surface: #1a1a1a;
+            --surface2: #222;
             --red: #c41e1e;
             --red-light: #e63946;
-            --green: #2ecc71;
-            --text: #e8e0e0;
-            --muted: #777;
+            --text: #f0e6e6;
+            --muted: #888;
             --border: rgba(196,30,30,0.2);
         }
-
         * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
+        /* LOGIN */
+        #login-screen {
+            display:flex; align-items:center; justify-content:center;
+            min-height:100vh; padding:20px;
         }
+        .login-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:16px; padding:48px 40px; width:100%; max-width:400px;
+            text-align:center;
+        }
+        .login-card h1 { font-size:1.8rem; margin-bottom:8px; color:var(--red-light); }
+        .login-card p { color:var(--muted); margin-bottom:32px; font-size:0.9rem; }
+        .form-group { margin-bottom:16px; text-align:left; }
+        .form-group label { display:block; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:6px; }
+        .form-group input {
+            width:100%; padding:12px 16px; background:var(--surface2);
+            border:1px solid var(--border); border-radius:8px; color:var(--text);
+            font-family:'Montserrat',sans-serif; font-size:0.95rem; outline:none;
+            transition:border-color 0.3s;
+        }
+        .form-group input:focus { border-color:var(--red); }
+        .btn-login {
+            width:100%; padding:14px; background:var(--red); color:#fff;
+            border:none; border-radius:8px; font-family:'Montserrat',sans-serif;
+            font-size:0.9rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:1.5px; cursor:pointer; margin-top:8px;
+            transition:background 0.3s;
+        }
+        .btn-login:hover { background:var(--red-light); }
+        .login-error { color:#ff6b6b; font-size:0.85rem; margin-top:12px; display:none; }
 
+        /* ADMIN PANEL */
+        #admin-panel { display:none; }
         .admin-header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background:var(--surface); border-bottom:1px solid var(--border);
+            padding:16px 32px; display:flex; align-items:center;
+            justify-content:space-between; position:sticky; top:0; z-index:100;
+        }
+        .admin-header h1 { font-size:1.2rem; color:var(--red-light); }
+        .admin-header span { font-size:0.8rem; color:var(--muted); }
+        .btn-logout {
+            padding:8px 20px; background:transparent; border:1px solid var(--red);
+            color:var(--red); border-radius:6px; cursor:pointer;
+            font-family:'Montserrat',sans-serif; font-size:0.8rem; font-weight:600;
+            transition:all 0.3s;
+        }
+        .btn-logout:hover { background:var(--red); color:#fff; }
+
+        .admin-content { max-width:900px; margin:0 auto; padding:32px 24px; }
+
+        .section-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:12px; padding:28px; margin-bottom:24px;
+        }
+        .section-card h2 {
+            font-size:1rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:1.5px; color:var(--red-light); margin-bottom:20px;
+            padding-bottom:12px; border-bottom:1px solid var(--border);
         }
 
-        .admin-header h1 { font-size: 1.3rem; color: var(--red); }
+        .field-group { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        @media(max-width:600px) { .field-group { grid-template-columns:1fr; } }
 
-        .admin-header__links { display: flex; gap: 20px; align-items: center; }
-
-        .admin-header a {
-            color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;
+        .field { margin-bottom:16px; }
+        .field label { display:block; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:6px; }
+        .field input, .field textarea {
+            width:100%; padding:11px 14px; background:var(--surface2);
+            border:1px solid var(--border); border-radius:8px; color:var(--text);
+            font-family:'Montserrat',sans-serif; font-size:0.9rem; outline:none;
+            transition:border-color 0.3s;
         }
-        .admin-header a:hover { color: var(--red-light); }
+        .field input:focus, .field textarea:focus { border-color:var(--red); }
+        .field textarea { resize:vertical; min-height:80px; }
 
-        .admin-container { max-width: 900px; margin: 40px auto; padding: 0 24px; }
+        /* Date picker */
+        .field input[type="date"] { color-scheme:dark; }
 
-        .admin-section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 28px;
-        }
-
-        .admin-section h2 {
-            font-size: 1.1rem; color: var(--red); margin-bottom: 20px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .admin-section h2 i { font-size: 1rem; }
-
-        .form-group { margin-bottom: 18px; }
-
-        .form-group label {
-            display: block; font-size: 0.8rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px;
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="url"] {
-            width: 100%; padding: 12px 16px; background: var(--surface2);
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
-            color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 0.9rem;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus { outline: none; border-color: var(--red); }
-
-        .form-group .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
-
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-        /* === UPLOAD AREA === */
-        .upload-area {
-            border: 2px dashed rgba(196,30,30,0.3);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .upload-area:hover {
-            border-color: var(--red);
-            background: rgba(196,30,30,0.05);
-        }
-
-        .upload-area.has-image {
-            border-style: solid;
-            padding: 8px;
-        }
-
-        .upload-area i { font-size: 2rem; color: var(--red); }
-        .upload-area p { font-size: 0.85rem; color: var(--muted); }
-        .upload-area input[type="file"] { display: none; }
-
-        .upload-area .preview-img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            object-fit: contain;
-        }
-
-        .upload-area .remove-img {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(196,30,30,0.9);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-        }
-        .upload-area .remove-img:hover { background: var(--red-light); }
-
-        /* === FOTOS GALLERY === */
-        .fotos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .foto-card {
-            position: relative;
-            aspect-ratio: 3/4;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: var(--surface2);
-        }
-
-        .foto-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .foto-card .foto-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: var(--muted);
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
-
-        .foto-card .foto-placeholder i { font-size: 1.5rem; color: var(--red); }
-
-        .foto-card .foto-actions {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 8px;
-            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .foto-card:hover .foto-actions { opacity: 1; }
-
-        .foto-card .foto-actions button {
-            background: rgba(196,30,30,0.8);
-            border: none;
-            color: #fff;
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-        }
-        .foto-card .foto-actions button:hover { background: var(--red-light); }
-
-        .foto-card .foto-number {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            background: rgba(0,0,0,0.7);
-            color: var(--red);
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
-        .foto-card input[type="file"] { display: none; }
-
-        .btn-add-fotos {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: transparent;
-            border: 1px dashed var(--border);
-            color: var(--muted);
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-        .btn-add-fotos:hover { border-color: var(--red); color: var(--red-light); }
-
-        /* === BUTTONS === */
-        .actions-bar {
-            display: flex; justify-content: center; gap: 16px;
-            padding: 20px 0 60px; flex-wrap: wrap;
-        }
-
+        /* Save button */
         .btn-save {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 14px 36px; background: var(--red); color: #fff; border: none;
-            border-radius: 8px; font-family: inherit; font-weight: 700;
-            font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1.5px;
-            cursor: pointer; transition: all 0.3s;
-            box-shadow: 0 4px 20px rgba(196,30,30,0.3);
+            padding:12px 32px; background:var(--red); color:#fff;
+            border:none; border-radius:8px; cursor:pointer;
+            font-family:'Montserrat',sans-serif; font-size:0.85rem; font-weight:700;
+            text-transform:uppercase; letter-spacing:1.5px; transition:all 0.3s;
+            display:inline-flex; align-items:center; gap:8px;
         }
-        .btn-save:hover { background: var(--red-light); transform: translateY(-2px); }
+        .btn-save:hover { background:var(--red-light); transform:translateY(-1px); }
+        .btn-save:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
 
-        .btn-reset {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 14px 28px; background: transparent; color: var(--muted);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
-            font-family: inherit; font-weight: 600; font-size: 0.85rem;
-            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s;
+        .save-row { display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap; }
+        .save-msg { font-size:0.85rem; color:#4caf50; display:none; }
+        .save-msg.error { color:#ff6b6b; }
+
+        /* Fotos */
+        .fotos-grid {
+            display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+            gap:12px; margin-bottom:20px;
         }
-        .btn-reset:hover { border-color: var(--red); color: var(--red-light); }
+        .foto-item {
+            position:relative; aspect-ratio:3/4; border-radius:8px; overflow:hidden;
+            background:var(--surface2); border:1px solid var(--border);
+        }
+        .foto-item img { width:100%; height:100%; object-fit:cover; }
+        .foto-item .btn-delete-foto {
+            position:absolute; top:6px; right:6px; background:rgba(196,30,30,0.9);
+            border:none; color:#fff; width:28px; height:28px; border-radius:50%;
+            cursor:pointer; font-size:1rem; display:flex; align-items:center;
+            justify-content:center; transition:background 0.2s;
+        }
+        .foto-item .btn-delete-foto:hover { background:var(--red-light); }
+
+        .upload-area {
+            border:2px dashed var(--border); border-radius:10px; padding:32px;
+            text-align:center; cursor:pointer; transition:border-color 0.3s;
+            position:relative;
+        }
+        .upload-area:hover { border-color:var(--red); }
+        .upload-area input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+        .upload-area p { color:var(--muted); font-size:0.9rem; }
+        .upload-area .upload-icon { font-size:2rem; margin-bottom:8px; }
+
+        .upload-progress { display:none; margin-top:12px; }
+        .progress-bar { height:4px; background:var(--surface2); border-radius:2px; overflow:hidden; }
+        .progress-fill { height:100%; background:var(--red); width:0%; transition:width 0.3s; }
+        .progress-text { font-size:0.8rem; color:var(--muted); margin-top:6px; }
+
+        /* Flyer preview */
+        .flyer-preview {
+            width:120px; height:160px; border-radius:8px; overflow:hidden;
+            background:var(--surface2); border:1px solid var(--border);
+            margin-bottom:12px; position:relative;
+        }
+        .flyer-preview img { width:100%; height:100%; object-fit:cover; }
 
         /* Toast */
         .toast {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--green); color: #000; padding: 14px 28px;
-            border-radius: 10px; font-weight: 700; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 10px; z-index: 9999;
-            transition: transform 0.4s ease;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            position:fixed; bottom:24px; right:24px; background:#1a1a1a;
+            border:1px solid var(--red); color:var(--text); padding:14px 20px;
+            border-radius:10px; font-size:0.9rem; z-index:9999;
+            transform:translateY(100px); opacity:0; transition:all 0.3s;
+            max-width:300px;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-        .toast.error { background: var(--red); color: #fff; }
+        .toast.show { transform:translateY(0); opacity:1; }
+        .toast.success { border-color:#4caf50; }
+        .toast.error { border-color:#ff6b6b; }
 
-        /* Storage bar */
-        .storage-bar {
-            margin-bottom: 28px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 20px;
+        /* Loading overlay */
+        .loading {
+            position:fixed; inset:0; background:rgba(10,10,10,0.8);
+            display:flex; align-items:center; justify-content:center;
+            z-index:9998; display:none;
         }
-
-        .storage-bar__label {
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
+        .spinner {
+            width:40px; height:40px; border:3px solid var(--border);
+            border-top-color:var(--red); border-radius:50%;
+            animation:spin 0.8s linear infinite;
         }
-
-        .storage-bar__track {
-            width: 100%;
-            height: 6px;
-            background: var(--surface2);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .storage-bar__fill {
-            height: 100%;
-            background: var(--red);
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-
-        .storage-bar__fill.warning { background: #e67e22; }
-        .storage-bar__fill.danger { background: #e74c3c; }
-
-        .alert {
-            background: rgba(196,30,30,0.1);
-            border: 1px solid var(--red);
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-bottom: 28px;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: var(--text);
-        }
-        .alert strong { color: var(--red-light); }
-
-        @media (max-width: 600px) {
-            .form-row { grid-template-columns: 1fr; }
-            .fotos-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
-            .admin-header { padding: 12px 16px; }
-            .admin-header h1 { font-size: 1rem; }
-        }
+        @keyframes spin { to { transform:rotate(360deg); } }
     </style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="login-screen">
+    <div class="login-card">
+        <h1>LA PRESIÓN</h1>
+        <p>Panel de administración</p>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="login-pass" placeholder="••••••••">
+        </div>
+        <button class="btn-login" onclick="doLogin()">Ingresar</button>
+        <p class="login-error" id="login-error">Email o contraseña incorrectos</p>
+    </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
     <div class="admin-header">
-        <h1><i class="fas fa-lock"></i> Admin — La Presión</h1>
-        <div class="admin-header__links">
-            <a href="../index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Ver sitio</a>
-            <a href="../index.html"><i class="fas fa-arrow-left"></i> Volver</a>
+        <div>
+            <h1>Panel Admin — La Presión</h1>
+            <span id="admin-email-display"></span>
         </div>
+        <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
     </div>
 
-    <div class="admin-container">
+    <div class="admin-content">
 
-        <div class="alert">
-            <strong>¿Cómo funciona?</strong><br>
-            Subí imágenes, cambiá los datos y hacé clic en <strong>"Guardar Cambios"</strong>.
-            Después recargá la página principal (F5) y vas a ver todo actualizado al instante.
-        </div>
-
-        <!-- Storage indicator -->
-        <div class="storage-bar">
-            <div class="storage-bar__label">
-                <span>Almacenamiento usado</span>
-                <span id="storage-used">Calculando...</span>
-            </div>
-            <div class="storage-bar__track">
-                <div class="storage-bar__fill" id="storage-fill" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <!-- === REDES SOCIALES === -->
-        <div class="admin-section">
-            <h2><i class="fab fa-instagram"></i> Redes Sociales</h2>
-            <div class="form-group">
-                <label>Instagram URL</label>
-                <input type="url" id="input-instagram" placeholder="https://www.instagram.com/lapresion.ok/">
-            </div>
-        </div>
-
-        <!-- === PRÓXIMO EVENTO === -->
-        <div class="admin-section">
-            <h2><i class="fas fa-calendar-alt"></i> Próximo Evento</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="text" id="input-fecha" placeholder="Sábado 22 de Marzo">
+        <!-- PRÓXIMO EVENTO -->
+        <div class="section-card">
+            <h2>📅 Próximo Evento</h2>
+            <div class="field-group">
+                <div class="field">
+                    <label>Fecha del evento</label>
+                    <input type="date" id="evento-fecha">
                 </div>
-                <div class="form-group">
+                <div class="field">
                     <label>Lugar</label>
-                    <input type="text" id="input-lugar" placeholder="Zona Oeste, CHN">
+                    <input type="text" id="evento-lugar" placeholder="Ej: Zona Oeste, CHN">
                 </div>
             </div>
-
-            <!-- FLYER UPLOAD -->
-            <div class="form-group">
-                <label>Imagen del Flyer</label>
-                <div class="upload-area" id="flyer-upload">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Hacé clic o arrastrá una imagen acá</p>
-                    <p class="hint">JPG, PNG o WEBP — Recomendado: formato vertical</p>
-                    <input type="file" id="flyer-file" accept="image/*">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Link Entradas (Passline)</label>
-                    <input type="url" id="input-link-entradas" placeholder="https://www.passline.com/eventos/la-presion">
-                </div>
-                <div class="form-group">
-                    <label>Link Mesas VIP</label>
-                    <input type="url" id="input-link-vip" placeholder="https://www.passline.com/eventos/la-presion-vip">
-                </div>
+            <div class="save-row">
+                <button class="btn-save" onclick="saveEvento()">💾 Guardar evento</button>
+                <span class="save-msg" id="msg-evento"></span>
             </div>
         </div>
 
-        <!-- === GALERÍA === -->
-        <div class="admin-section">
-            <h2><i class="fas fa-images"></i> Galería de Fotos</h2>
-            <p class="hint" style="margin-bottom:16px;">
-                Subí fotos haciendo clic en cada tarjeta o usá el botón para agregar más.
-                Las imágenes se comprimen automáticamente para no ocupar demasiado espacio.
-            </p>
+        <!-- LINKS -->
+        <div class="section-card">
+            <h2>🔗 Links</h2>
+            <div class="field-group">
+                <div class="field">
+                    <label>Link Passline (Entradas)</label>
+                    <input type="url" id="link-passline" placeholder="https://passline.com/...">
+                </div>
+                <div class="field">
+                    <label>Link Mesas VIP (WhatsApp)</label>
+                    <input type="url" id="link-whatsapp" placeholder="https://wa.link/...">
+                </div>
+                <div class="field">
+                    <label>Instagram</label>
+                    <input type="url" id="link-instagram" placeholder="https://instagram.com/...">
+                </div>
+                <div class="field">
+                    <label>ID Playlist Spotify</label>
+                    <input type="text" id="spotify-id" placeholder="37i9dQZF1DX...">
+                </div>
+            </div>
+            <div class="save-row">
+                <button class="btn-save" onclick="saveLinks()">💾 Guardar links</button>
+                <span class="save-msg" id="msg-links"></span>
+            </div>
+        </div>
+
+        <!-- FLYER -->
+        <div class="section-card">
+            <h2>🖼️ Flyer del Evento</h2>
+            <div class="flyer-preview" id="flyer-preview">
+                <img id="flyer-img-preview" src="" alt="Flyer actual" style="display:none">
+            </div>
+            <div class="upload-area" id="flyer-upload-area">
+                <input type="file" id="flyer-file" accept="image/*" onchange="uploadFlyer(this)">
+                <div class="upload-icon">📸</div>
+                <p>Hacé clic o arrastrá el flyer acá<br><small>JPG, PNG — máx 5MB</small></p>
+            </div>
+            <div class="upload-progress" id="flyer-progress">
+                <div class="progress-bar"><div class="progress-fill" id="flyer-progress-fill"></div></div>
+                <p class="progress-text" id="flyer-progress-text">Subiendo...</p>
+            </div>
+        </div>
+
+        <!-- GALERÍA -->
+        <div class="section-card">
+            <h2>📷 Galería de Fotos</h2>
             <div class="fotos-grid" id="fotos-grid"></div>
-            <button class="btn-add-fotos" id="btn-add-fotos">
-                <i class="fas fa-plus"></i> Agregar Fotos
-            </button>
-            <input type="file" id="multi-foto-input" accept="image/*" multiple style="display:none;">
-        </div>
-
-        <!-- === SPOTIFY === -->
-        <div class="admin-section">
-            <h2><i class="fab fa-spotify"></i> Playlist de Spotify</h2>
-            <div class="form-group">
-                <label>ID de la Playlist</label>
-                <input type="text" id="input-spotify" placeholder="37i9dQZF1DXaXB8fQg7xif">
-                <p class="hint">
-                    Spotify → Playlist → Compartir → Copiar enlace. El ID es la parte entre
-                    <code>/playlist/</code> y <code>?</code>
-                </p>
+            <div class="upload-area">
+                <input type="file" id="fotos-files" accept="image/*" multiple onchange="uploadFotos(this)">
+                <div class="upload-icon">📁</div>
+                <p>Subir fotos a la galería (podés seleccionar varias)<br><small>JPG, PNG — máx 5MB cada una</small></p>
+            </div>
+            <div class="upload-progress" id="fotos-progress">
+                <div class="progress-bar"><div class="progress-fill" id="fotos-progress-fill"></div></div>
+                <p class="progress-text" id="fotos-progress-text">Subiendo...</p>
             </div>
         </div>
 
-        <!-- === ACCIONES === -->
-        <div class="actions-bar">
-            <button class="btn-save" id="btn-save">
-                <i class="fas fa-save"></i> Guardar Cambios
-            </button>
-            <button class="btn-reset" id="btn-reset">
-                <i class="fas fa-undo"></i> Restaurar originales
-            </button>
-        </div>
-
     </div>
+</div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toast-text">Cambios guardados</span>
-    </div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<!-- Loading -->
+<div class="loading" id="loading"><div class="spinner"></div></div>
 
-    <script src="../js/data.js"></script>
-    <script>
-    /* ================================================
-       ADMIN — Image Upload + localStorage
-       ================================================ */
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    let flyerBase64 = '';
-    let fotosArray = []; // Array de { src: base64_or_path, alt: string }
+// ============================================================
+// CONFIGURACIÓN FIREBASE
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyBpwRWK4S_nPz6vaFmi1uJhWTOt7_1BII8",
+    authDomain: "la-presion.firebaseapp.com",
+    projectId: "la-presion",
+    storageBucket: "la-presion.firebasestorage.app",
+    messagingSenderId: "43703374307",
+    appId: "1:43703374307:web:72fb55aed83a0596d5d0d6",
+    measurementId: "G-121M0L9LQH"
+};
 
-    // === IMAGE COMPRESSION ===
-    function compressImage(file, maxWidth, quality) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width;
-                    let h = img.height;
+// ============================================================
+// CONFIGURACIÓN CLOUDINARY
+// ============================================================
+const CLOUDINARY_CLOUD = "dx6t9oafd";
+const CLOUDINARY_UPLOAD_PRESET = "lapresion_unsigned"; // Lo vamos a crear
 
-                    if (w > maxWidth) {
-                        h = Math.round((h * maxWidth) / w);
-                        w = maxWidth;
-                    }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
+// Exponer funciones globalmente
+window._auth = auth;
+window._db = db;
+window._signInWithEmailAndPassword = signInWithEmailAndPassword;
+window._signOut = signOut;
+window._doc = doc;
+window._getDoc = getDoc;
+window._setDoc = setDoc;
+window._updateDoc = updateDoc;
+window._arrayUnion = arrayUnion;
+window._arrayRemove = arrayRemove;
+window.CLOUDINARY_CLOUD = CLOUDINARY_CLOUD;
+window.CLOUDINARY_UPLOAD_PRESET = CLOUDINARY_UPLOAD_PRESET;
 
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
+// Auth state
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('admin-email-display').textContent = user.email;
+        loadAllData();
+    } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('admin-panel').style.display = 'none';
     }
+});
+</script>
 
-    // === FLYER UPLOAD ===
-    function initFlyerUpload() {
-        const area = document.getElementById('flyer-upload');
-        const input = document.getElementById('flyer-file');
-
-        area.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-img')) return;
-            input.click();
-        });
-
-        area.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            area.style.borderColor = 'var(--red)';
-        });
-
-        area.addEventListener('dragleave', () => {
-            area.style.borderColor = '';
-        });
-
-        area.addEventListener('drop', (e) => {
-            e.preventDefault();
-            area.style.borderColor = '';
-            if (e.dataTransfer.files.length > 0) {
-                handleFlyerFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        input.addEventListener('change', () => {
-            if (input.files.length > 0) {
-                handleFlyerFile(input.files[0]);
-            }
-        });
+<script>
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+    try {
+        await window._signInWithEmailAndPassword(window._auth, email, pass);
+    } catch(e) {
+        errEl.style.display = 'block';
     }
+}
 
-    async function handleFlyerFile(file) {
-        if (!file.type.startsWith('image/')) return;
-        flyerBase64 = await compressImage(file, 800, 0.8);
-        renderFlyerPreview();
-        updateStorageBar();
+async function doLogout() {
+    await window._signOut(window._auth);
+}
+
+// Enter key en login
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') {
+        doLogin();
     }
+});
 
-    function renderFlyerPreview() {
-        const area = document.getElementById('flyer-upload');
-        if (flyerBase64 && flyerBase64.startsWith('data:')) {
-            area.classList.add('has-image');
-            area.innerHTML = `
-                <img src="${flyerBase64}" class="preview-img" alt="Flyer preview">
-                <button class="remove-img" onclick="removeFlyer(event)" title="Quitar imagen">&times;</button>
-            `;
-        } else {
-            area.classList.remove('has-image');
-            area.innerHTML = `
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Hacé clic o arrastrá una imagen acá</p>
-                <p class="hint">JPG, PNG o WEBP — Recomendado: formato vertical</p>
-                <input type="file" id="flyer-file" accept="image/*">
-            `;
-            // Re-bind event
-            document.getElementById('flyer-file').addEventListener('change', function() {
-                if (this.files.length > 0) handleFlyerFile(this.files[0]);
-            });
-        }
-    }
+// ============================================================
+// CARGAR DATOS
+// ============================================================
+async function loadAllData() {
+    showLoading(true);
+    try {
+        const docRef = window._doc(window._db, 'sitedata', 'config');
+        const snap = await window._getDoc(docRef);
+        if (snap.exists()) {
+            const data = snap.data();
 
-    function removeFlyer(e) {
-        e.stopPropagation();
-        flyerBase64 = '';
-        renderFlyerPreview();
-        updateStorageBar();
-    }
+            // Evento
+            if (data.eventoFecha) document.getElementById('evento-fecha').value = data.eventoFecha;
+            if (data.eventoLugar) document.getElementById('evento-lugar').value = data.eventoLugar;
 
-    // === GALLERY PHOTOS ===
-    function renderFotosGrid() {
-        const grid = document.getElementById('fotos-grid');
-        grid.innerHTML = '';
+            // Links
+            if (data.linkPassline) document.getElementById('link-passline').value = data.linkPassline;
+            if (data.linkWhatsapp) document.getElementById('link-whatsapp').value = data.linkWhatsapp;
+            if (data.linkInstagram) document.getElementById('link-instagram').value = data.linkInstagram;
+            if (data.spotifyId) document.getElementById('spotify-id').value = data.spotifyId;
 
-        fotosArray.forEach((foto, i) => {
-            const card = document.createElement('div');
-            card.className = 'foto-card';
-
-            if (foto.src && (foto.src.startsWith('data:') || foto.src.startsWith('assets/'))) {
-                card.innerHTML = `
-                    <span class="foto-number">${i + 1}</span>
-                    <img src="${foto.src}" alt="${foto.alt}">
-                    <div class="foto-actions">
-                        <button onclick="changeFoto(${i})" title="Cambiar"><i class="fas fa-sync-alt"></i></button>
-                        <button onclick="moveFoto(${i}, -1)" title="Mover izquierda"><i class="fas fa-arrow-left"></i></button>
-                        <button onclick="moveFoto(${i}, 1)" title="Mover derecha"><i class="fas fa-arrow-right"></i></button>
-                        <button onclick="removeFoto(${i})" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <input type="file" id="change-foto-${i}" accept="image/*" style="display:none;"
-                           onchange="handleChangeFoto(${i}, this)">
-                `;
-            } else {
-                card.innerHTML = `
-                    <div class="foto-placeholder" onclick="changeFoto(${i})">
-                        <i class="fas fa-image"></i>
-                        <span>Sin imagen</span>
-                    </div>
-                    <span class="foto-number">${i + 1}</span>
-                    <div class="foto-actions">
-                        <button onclick="removeFoto(${i})" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <input type="file" id="change-foto-${i}" accept="image/*" style="display:none;"
-                           onchange="handleChangeFoto(${i}, this)">
-                `;
+            // Flyer
+            if (data.flyerUrl) {
+                const img = document.getElementById('flyer-img-preview');
+                img.src = data.flyerUrl;
+                img.style.display = 'block';
             }
 
-            grid.appendChild(card);
-        });
-    }
-
-    function changeFoto(index) {
-        document.getElementById(`change-foto-${index}`).click();
-    }
-
-    async function handleChangeFoto(index, input) {
-        if (input.files.length === 0) return;
-        const base64 = await compressImage(input.files[0], 800, 0.75);
-        fotosArray[index].src = base64;
-        renderFotosGrid();
-        updateStorageBar();
-    }
-
-    function removeFoto(index) {
-        fotosArray.splice(index, 1);
-        renderFotosGrid();
-        updateStorageBar();
-    }
-
-    function moveFoto(index, direction) {
-        const newIndex = index + direction;
-        if (newIndex < 0 || newIndex >= fotosArray.length) return;
-        [fotosArray[index], fotosArray[newIndex]] = [fotosArray[newIndex], fotosArray[newIndex + direction < 0 ? index : index]];
-        // Swap correcto
-        const temp = fotosArray[index];
-        fotosArray[index] = fotosArray[newIndex];
-        fotosArray[newIndex] = temp;
-        renderFotosGrid();
-    }
-
-    // Add multiple photos
-    document.getElementById('btn-add-fotos').addEventListener('click', () => {
-        document.getElementById('multi-foto-input').click();
-    });
-
-    document.getElementById('multi-foto-input').addEventListener('change', async function() {
-        const files = Array.from(this.files);
-        for (const file of files) {
-            if (!file.type.startsWith('image/')) continue;
-            const base64 = await compressImage(file, 800, 0.75);
-            fotosArray.push({
-                src: base64,
-                alt: `La Presión - Fiesta ${fotosArray.length + 1}`
-            });
-        }
-        renderFotosGrid();
-        updateStorageBar();
-        this.value = ''; // Reset input
-    });
-
-    // === STORAGE BAR ===
-    function updateStorageBar() {
-        let totalSize = 0;
-        for (let key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
-                totalSize += localStorage[key].length * 2; // UTF-16
+            // Fotos
+            if (data.fotos && data.fotos.length > 0) {
+                renderFotos(data.fotos);
             }
         }
-
-        // También calcular lo pendiente (sin guardar aún)
-        const pendingData = JSON.stringify({
-            flyerBase64,
-            fotosArray
-        });
-        const pendingSize = pendingData.length * 2;
-        const estimatedTotal = totalSize + pendingSize;
-
-        const maxSize = 5 * 1024 * 1024; // ~5MB localStorage limit
-        const percentage = Math.min((estimatedTotal / maxSize) * 100, 100);
-
-        document.getElementById('storage-used').textContent =
-            `${(estimatedTotal / (1024 * 1024)).toFixed(1)} MB / 5 MB`;
-
-        const fill = document.getElementById('storage-fill');
-        fill.style.width = percentage + '%';
-        fill.className = 'storage-bar__fill';
-        if (percentage > 80) fill.classList.add('danger');
-        else if (percentage > 60) fill.classList.add('warning');
+    } catch(e) {
+        showToast('Error cargando datos', 'error');
     }
+    showLoading(false);
+}
 
-    // === SAVE ===
-    document.getElementById('btn-save').addEventListener('click', () => {
-        const newData = {
-            redes: {
-                instagram: document.getElementById('input-instagram').value
-            },
-            proximoEvento: {
-                fecha: document.getElementById('input-fecha').value,
-                lugar: document.getElementById('input-lugar').value,
-                flyerImg: flyerBase64 || document.getElementById('input-flyer')?.value || 'assets/img/flyer-proximo.jpg',
-                linkEntradas: document.getElementById('input-link-entradas').value,
-                linkMesasVIP: document.getElementById('input-link-vip').value
-            },
-            fotos: fotosArray.map((f, i) => ({
-                src: f.src,
-                alt: `La Presión - Fiesta ${i + 1}`
-            })),
-            spotifyPlaylistId: document.getElementById('input-spotify').value,
-            textos: {
-                heroTitle: "La Presión",
-                heroTagline: "La Misa Menos Santa del País",
-                entradaTitle: "Adquirí Tu Entrada a La Presión",
-                entradaSub: "No te quedes afuera. Las entradas se agotan rápido."
-            }
-        };
+// ============================================================
+// GUARDAR EVENTO
+// ============================================================
+async function saveEvento() {
+    const fecha = document.getElementById('evento-fecha').value;
+    const lugar = document.getElementById('evento-lugar').value.trim();
+    if (!fecha || !lugar) { showToast('Completá fecha y lugar', 'error'); return; }
+
+    // Convertir fecha a texto legible
+    const fechaObj = new Date(fecha + 'T12:00:00');
+    const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const fechaTexto = `${dias[fechaObj.getDay()]} ${fechaObj.getDate()} de ${meses[fechaObj.getMonth()]}`;
+
+    try {
+        const docRef = window._doc(window._db, 'sitedata', 'config');
+        await window._setDoc(docRef, { eventoFecha: fecha, eventoLugar: lugar, eventoFechaTexto: fechaTexto }, { merge: true });
+        showToast('✅ Evento guardado');
+    } catch(e) {
+        showToast('Error guardando', 'error');
+    }
+}
+
+// ============================================================
+// GUARDAR LINKS
+// ============================================================
+async function saveLinks() {
+    const data = {
+        linkPassline: document.getElementById('link-passline').value.trim(),
+        linkWhatsapp: document.getElementById('link-whatsapp').value.trim(),
+        linkInstagram: document.getElementById('link-instagram').value.trim(),
+        spotifyId: document.getElementById('spotify-id').value.trim(),
+    };
+    try {
+        const docRef = window._doc(window._db, 'sitedata', 'config');
+        await window._setDoc(docRef, data, { merge: true });
+        showToast('✅ Links guardados');
+    } catch(e) {
+        showToast('Error guardando', 'error');
+    }
+}
+
+// ============================================================
+// SUBIR FLYER A CLOUDINARY
+// ============================================================
+async function uploadFlyer(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('El archivo es muy grande (máx 5MB)', 'error'); return; }
+
+    const progressEl = document.getElementById('flyer-progress');
+    const fillEl = document.getElementById('flyer-progress-fill');
+    const textEl = document.getElementById('flyer-progress-text');
+    progressEl.style.display = 'block';
+    fillEl.style.width = '30%';
+    textEl.textContent = 'Subiendo flyer...';
+
+    try {
+        const url = await uploadToCloudinary(file, 'flyers');
+        fillEl.style.width = '100%';
+        textEl.textContent = '¡Listo!';
+
+        // Guardar en Firestore
+        const docRef = window._doc(window._db, 'sitedata', 'config');
+        await window._setDoc(docRef, { flyerUrl: url }, { merge: true });
+
+        // Preview
+        const img = document.getElementById('flyer-img-preview');
+        img.src = url;
+        img.style.display = 'block';
+
+        showToast('✅ Flyer actualizado');
+        setTimeout(() => { progressEl.style.display = 'none'; fillEl.style.width = '0%'; }, 2000);
+    } catch(e) {
+        showToast('Error subiendo flyer', 'error');
+        progressEl.style.display = 'none';
+    }
+}
+
+// ============================================================
+// SUBIR FOTOS A CLOUDINARY
+// ============================================================
+async function uploadFotos(input) {
+    const files = Array.from(input.files);
+    if (!files.length) return;
+
+    const progressEl = document.getElementById('fotos-progress');
+    const fillEl = document.getElementById('fotos-progress-fill');
+    const textEl = document.getElementById('fotos-progress-text');
+    progressEl.style.display = 'block';
+
+    const docRef = window._doc(window._db, 'sitedata', 'config');
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} es muy grande, saltando...`, 'error'); continue; }
+
+        const pct = Math.round(((i + 0.5) / files.length) * 100);
+        fillEl.style.width = pct + '%';
+        textEl.textContent = `Subiendo ${i + 1} de ${files.length}...`;
 
         try {
-            localStorage.setItem('lapresion_data', JSON.stringify(newData));
-            showToast('¡Cambios guardados! Recargá la página principal (F5).', false);
-            updateStorageBar();
-        } catch (e) {
-            if (e.name === 'QuotaExceededError') {
-                showToast('Sin espacio. Eliminá algunas fotos o reducí su tamaño.', true);
-            } else {
-                showToast('Error: ' + e.message, true);
-            }
+            const url = await uploadToCloudinary(file, 'galeria');
+            const fotoData = { src: url, alt: `La Presión - Foto ${Date.now()}` };
+
+            // Obtener fotos actuales y agregar
+            const snap = await window._getDoc(docRef);
+            const fotos = snap.exists() && snap.data().fotos ? snap.data().fotos : [];
+            fotos.push(fotoData);
+            await window._setDoc(docRef, { fotos }, { merge: true });
+
+            // Re-renderizar
+            renderFotos(fotos);
+        } catch(e) {
+            showToast(`Error subiendo ${file.name}`, 'error');
         }
+    }
+
+    fillEl.style.width = '100%';
+    textEl.textContent = '¡Listo!';
+    showToast('✅ Fotos actualizadas');
+    setTimeout(() => { progressEl.style.display = 'none'; fillEl.style.width = '0%'; }, 2000);
+    input.value = '';
+}
+
+// ============================================================
+// ELIMINAR FOTO
+// ============================================================
+async function deletePhoto(index) {
+    if (!confirm('¿Eliminar esta foto?')) return;
+    try {
+        const docRef = window._doc(window._db, 'sitedata', 'config');
+        const snap = await window._getDoc(docRef);
+        if (!snap.exists()) return;
+        const fotos = snap.data().fotos || [];
+        fotos.splice(index, 1);
+        await window._setDoc(docRef, { fotos }, { merge: true });
+        renderFotos(fotos);
+        showToast('✅ Foto eliminada');
+    } catch(e) {
+        showToast('Error eliminando foto', 'error');
+    }
+}
+
+// ============================================================
+// RENDER FOTOS
+// ============================================================
+function renderFotos(fotos) {
+    const grid = document.getElementById('fotos-grid');
+    grid.innerHTML = '';
+    fotos.forEach((foto, i) => {
+        const div = document.createElement('div');
+        div.className = 'foto-item';
+        div.innerHTML = `
+            <img src="${foto.src}" alt="${foto.alt}" loading="lazy">
+            <button class="btn-delete-foto" onclick="deletePhoto(${i})" title="Eliminar">×</button>
+        `;
+        grid.appendChild(div);
     });
+}
 
-    // === RESET ===
-    document.getElementById('btn-reset').addEventListener('click', () => {
-        if (confirm('¿Estás seguro? Se borran todos los cambios y vuelve a los valores originales.')) {
-            localStorage.removeItem('lapresion_data');
-            flyerBase64 = '';
-            fotosArray = DEFAULT_DATA.fotos.map(f => ({ ...f }));
-            loadFormFromData(DEFAULT_DATA);
-            renderFlyerPreview();
-            renderFotosGrid();
-            updateStorageBar();
-            showToast('Valores restaurados.', false);
-        }
+// ============================================================
+// CLOUDINARY UPLOAD
+// ============================================================
+async function uploadToCloudinary(file, folder) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', window.CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', `lapresion/${folder}`);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${window.CLOUDINARY_CLOUD}/image/upload`, {
+        method: 'POST',
+        body: formData
     });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    return data.secure_url;
+}
 
-    // === LOAD FORM ===
-    function loadFormFromData(data) {
-        document.getElementById('input-instagram').value = data.redes.instagram || '';
-        document.getElementById('input-fecha').value = data.proximoEvento.fecha || '';
-        document.getElementById('input-lugar').value = data.proximoEvento.lugar || '';
-        document.getElementById('input-link-entradas').value = data.proximoEvento.linkEntradas || '';
-        document.getElementById('input-link-vip').value = data.proximoEvento.linkMesasVIP || '';
-        document.getElementById('input-spotify').value = data.spotifyPlaylistId || '';
-    }
+// ============================================================
+// UI HELPERS
+// ============================================================
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => { toast.className = 'toast'; }, 3500);
+}
 
-    // === TOAST ===
-    function showToast(message, isError) {
-        const toast = document.getElementById('toast');
-        const text = document.getElementById('toast-text');
-        text.textContent = message;
-        toast.classList.toggle('error', isError);
-        toast.querySelector('i').className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 4000);
-    }
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
 
-    // === INIT ===
-    function init() {
-        const data = SITE_DATA;
-        loadFormFromData(data);
-
-        // Flyer
-        flyerBase64 = data.proximoEvento.flyerImg || '';
-        renderFlyerPreview();
-
-        // Fotos
-        fotosArray = data.fotos.map(f => ({ ...f }));
-        renderFotosGrid();
-
-        initFlyerUpload();
-        updateStorageBar();
-    }
-
-    init();
-    </script>
+// Exponer funciones globales
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.saveEvento = saveEvento;
+window.saveLinks = saveLinks;
+window.uploadFlyer = uploadFlyer;
+window.uploadFotos = uploadFotos;
+window.deletePhoto = deletePhoto;
+</script>
 </body>
 </html>
