@@ -49,32 +49,51 @@ function initCarrusel() {
     const { fotos } = SITE_DATA;
 
     if (!fotos || fotos.length === 0) {
-        track.innerHTML = '<p style="color:#888; text-align:center; width:100%; padding:40px;">No hay fotos cargadas. Subí fotos desde el panel admin.</p>';
+        track.innerHTML = '<p style="color:#888; text-align:center; width:100%; padding:40px;">No hay fotos cargadas.</p>';
         return;
     }
 
-    // Crear los items originales
-    fotos.forEach((foto, index) => {
+    // Crear items originales + duplicados
+    [...fotos, ...fotos].forEach((foto, index) => {
         const item = document.createElement('div');
         item.className = 'carrusel__item';
-        item.dataset.index = index;
-        item.innerHTML = `<img src="${foto.src}" alt="${foto.alt}" loading="lazy">`;
+        item.dataset.index = index % fotos.length;
+        item.innerHTML = `<img src="${foto.src}" alt="${foto.alt}">`;
         track.appendChild(item);
     });
 
-    // Duplicar las fotos para crear el efecto infinito
-    // La animación CSS mueve -50%, entonces necesitamos el doble de contenido
-    fotos.forEach((foto, index) => {
-        const item = document.createElement('div');
-        item.className = 'carrusel__item';
-        item.dataset.index = index;
-        item.innerHTML = `<img src="${foto.src}" alt="${foto.alt}" loading="lazy">`;
-        track.appendChild(item);
-    });
+    // Animación con JS en lugar de CSS
+    let position = 0;
+    let isPaused = false;
+    const speed = 0.5; // píxeles por frame
+    const totalWidth = track.scrollWidth / 2;
 
-    // Ajustar velocidad según cantidad de fotos (más fotos = más lento)
-    const speed = Math.max(15, fotos.length * 4);
-    track.style.animationDuration = speed + 's';
+    function animate() {
+        if (!isPaused) {
+            position += speed;
+            if (position >= totalWidth) position = 0;
+            track.style.transform = `translateX(-${position}px)`;
+        }
+        requestAnimationFrame(animate);
+    }
+
+    track.parentElement.addEventListener('mouseenter', () => isPaused = true);
+    track.parentElement.addEventListener('mouseleave', () => isPaused = false);
+
+    // Esperar a que las imágenes carguen antes de arrancar
+    const imgs = track.querySelectorAll('img');
+    let loaded = 0;
+    imgs.forEach(img => {
+        if (img.complete) {
+            loaded++;
+            if (loaded === imgs.length) animate();
+        } else {
+            img.addEventListener('load', () => {
+                loaded++;
+                if (loaded === imgs.length) animate();
+            });
+        }
+    });
 }
 
 /* === SPOTIFY === */

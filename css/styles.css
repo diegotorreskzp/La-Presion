@@ -493,8 +493,6 @@ img {
     display: flex;
     gap: 16px;
     width: max-content;
-    animation: autoScroll 30s linear infinite;
-    -webkit-animation: autoScroll 30s linear infinite;
     will-change: transform;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
