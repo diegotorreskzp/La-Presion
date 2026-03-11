@@ -25,7 +25,7 @@ const DEFAULT_DATA = {
     spotifyPlaylistId: "37i9dQZF1DXaXB8fQg7xif",
     textos: {
         heroTitle: "La Presión",
-        heroTagline: "La Misa Menos Santa del País",
+        heroTagline: "Reggaetón Na' Más",
         entradaTitle: "Adquirí Tu Entrada a La Presión",
         entradaSub: "No te quedes afuera. Las entradas se agotan rápido."
     }

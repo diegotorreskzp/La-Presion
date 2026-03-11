@@ -73,6 +73,21 @@ async function initApp() {
     initSpotify(SITE_DATA);
     initHeader();
     initLightbox(SITE_DATA);
+    initVideoAutoplay();
+}
+
+/* === VIDEO AUTOPLAY iOS === */
+function initVideoAutoplay() {
+    const video = document.querySelector('.hero__video');
+    if (!video) return;
+    video.muted = true;
+    video.play().catch(() => {
+        const playOnTouch = () => {
+            video.play();
+            document.removeEventListener('touchstart', playOnTouch);
+        };
+        document.addEventListener('touchstart', playOnTouch, { once: true });
+    });
 }
 
 /* === REDES SOCIALES === */
