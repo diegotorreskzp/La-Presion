@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Presión — La Misa Menos Santa</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" href="assets/logos/logo.png" type="image/png">
+</head>
+<body>
+
+    <!-- ==================== HEADER / NAV ==================== -->
+    <header class="header" id="header">
+        <div class="header__logo">
+            <a href="index.html">
+                <img src="assets/logos/logo.png" alt="La Presión Logo" class="header__logo-img">
+            </a>
+        </div>
+        <nav class="header__nav">
+            <a href="https://www.instagram.com/lapresion.ar/" id="link-instagram" target="_blank"><img src="assets/ui/INSTAGRAM2.png" alt="Instagram" class="header__nav-icon"></a>
+            <a href="#entradas"><img src="assets/ui/TICKETS2.png" alt="Entradas" class="header__nav-icon"></a>
+            <a href="#galeria"><img src="assets/ui/GALERIA2.png" alt="Galería" class="header__nav-icon"></a>
+            <a href="#contacto"><img src="assets/ui/CONTACTO2.png" alt="Contacto" class="header__nav-icon"></a>
+        </nav>
+        <div class="header__social">
+        </div>
+        <button class="header__burger" id="burger-btn" aria-label="Menú">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
+
+    <!-- Mobile nav overlay -->
+    <div class="mobile-nav" id="mobile-nav">
+        <a href="https://www.instagram.com/lapresion.ar/" target="_blank"><img src="assets/ui/INSTAGRAM.png" alt="Instagram" class="mobile-nav__icon"></a>
+        <a href="#entradas"><img src="assets/ui/TICKETS.png" alt="Entradas" class="mobile-nav__icon"></a>
+        <a href="#galeria"><img src="assets/ui/GALERIA.png" alt="Galería" class="mobile-nav__icon"></a>
+        <a href="#contacto"><img src="assets/ui/CONTACTO.png" alt="Contacto" class="mobile-nav__icon"></a>
+    </div>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="inicio">
+        <div class="hero__overlay"></div>
+        <!-- Colocá tu imagen de fondo como hero-bg.jpg en assets/img/ -->
+        <img src="assets/img/bg-main.jpg" alt="La Presión Fiesta" class="hero__bg">
+        <div class="hero__content">
+            <video class="hero__video" autoplay muted loop playsinline>
+                <source src="assets/img/0001.webm" type="video/webm">
+            </video>
+            <img src="assets/ui/Eslogan.png" alt="Siempre que nos vemos se siente la presión" class="hero__eslogan">
+        </div>
+        <div class="hero__scroll-indicator">
+            <img src="assets/ui/SLIDE1.png" alt="Scroll" class="scroll-icon">
+        </div>
+    </section>
+
+    <!-- ==================== ENTRADAS / CTA ==================== -->
+    <section class="entradas" id="entradas">
+        <div class="entradas__glow"></div>
+        <div class="container">
+            <img src="assets/ui/Próximamente.png" alt="Próximamente" class="section-title-img">
+            <p class="entradas__sub">No te quedes afuera. Las entradas se agotan rápido.</p>
+
+            <div class="entradas__cards">
+                <div class="entradas__card" id="proximo-evento-card">
+                    <div class="entradas__card-img-wrap">
+                        <!-- Acá va el flyer del próximo evento -->
+                        <img src="assets/img/flyer-proximo.jpg" alt="Próximo evento" class="entradas__card-img">
+                    </div>
+                    <div class="entradas__card-info">
+                        <p class="entradas__fecha" id="proximo-evento-fecha">Sábado 22 de Marzo</p>
+                        <p class="entradas__lugar" id="proximo-evento-lugar">Zona Oeste, CHN</p>
+                        <a href="#" id="link-passline" class="btn btn--primary" target="_blank">
+                            Comprar Entradas
+                        </a>
+                        <a href="#" id="link-mesas-vip" class="btn btn--outline" target="_blank">
+                            Entradas VIP
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== GALERÍA / CARRUSEL ==================== -->
+    <section class="galeria" id="galeria">
+        <div class="container">
+            <img src="assets/ui/Galería.png" alt="Galería" class="section-title-img">
+            <p class="galeria__sub">Revivilo. Cada noche es irrepetible.</p>
+
+            <div class="carrusel" id="carrusel">
+                <div class="carrusel__track" id="carrusel-track">
+                    <!-- Las fotos se cargan dinámicamente y se mueven solas -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MÚSICA / SPOTIFY ==================== -->
+    <section class="musica" id="musica">
+        <div class="container">
+            <img src="assets/ui/Reggaeton Namas.png" alt="Reggaetón Na' Más" class="section-title-img">
+            <p class="musica__sub">Escuchá la playlist oficial de La Presión.</p>
+            <div class="musica__embed" id="spotify-embed-container">
+                <!-- El iframe de Spotify se inyecta con JS desde data.json -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACTO / FOOTER ==================== -->
+    <footer class="footer" id="contacto">
+        <div class="container">
+            <div class="footer__icons-row">
+                <a href="https://www.instagram.com/lapresion.ar/" target="_blank"><img src="assets/ui/INSTAGRAM.png" alt="Instagram" class="footer__icon"></a>
+                <a href="#entradas"><img src="assets/ui/TICKETS.png" alt="Tickets" class="footer__icon"></a>
+                <a href="#galeria"><img src="assets/ui/GALERIA.png" alt="Galería" class="footer__icon"></a>
+                <a href="#contacto"><img src="assets/ui/CONTACTO.png" alt="Contacto" class="footer__icon"></a>
+                <a href="#musica"><img src="assets/ui/PLAYLIST.png" alt="Playlist" class="footer__icon"></a>
+            </div>
+        </div>
+        <div class="footer__bottom">
+            <p>&copy; 2026 La Presión. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- ==================== LIGHTBOX (para fotos) ==================== -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox__close" id="lightbox-close" aria-label="Cerrar">&times;</button>
+        <img src="" alt="Foto ampliada" class="lightbox__img" id="lightbox-img">
+        <button class="lightbox__btn lightbox__btn--prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox__btn lightbox__btn--next" id="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
