@@ -6,6 +6,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getFirestore, doc, getDoc }
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+
+function ensureProtocol(url) {
+    if (!url) return url;
+    url = url.trim();
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'https://' + url;
+    }
+    return url;
+}
+    
 const firebaseConfig = {
     apiKey: "AIzaSyBpwRWK4S_nPz6vaFmi1uJhWTOt7_1BII8",
     authDomain: "la-presion.firebaseapp.com",
@@ -53,8 +63,8 @@ async function loadSiteData() {
                     fechaTexto: d.eventoFechaTexto || DEFAULT_DATA.proximoEvento.fechaTexto,
                     lugar: d.eventoLugar || DEFAULT_DATA.proximoEvento.lugar,
                     flyerUrl: d.flyerUrl || DEFAULT_DATA.proximoEvento.flyerUrl,
-                    linkEntradas: d.linkPassline || DEFAULT_DATA.proximoEvento.linkEntradas,
-                    linkMesasVIP: d.linkWhatsapp || DEFAULT_DATA.proximoEvento.linkMesasVIP
+                    linkEntradas: ensureProtocol(d.linkPassline || DEFAULT_DATA.proximoEvento.linkEntradas),
+                    linkMesasVIP: ensureProtocol(d.linkWhatsapp || DEFAULT_DATA.proximoEvento.linkMesasVIP)
                 },
                 fotos: d.fotos && d.fotos.length > 0 ? d.fotos : DEFAULT_DATA.fotos,
                 spotifyPlaylistId: d.spotifyId || DEFAULT_DATA.spotifyPlaylistId

@@ -304,9 +304,6 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
 import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove }
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ============================================================
-// CONFIGURACIÓN FIREBASE
-// ============================================================
 const firebaseConfig = {
     apiKey: "AIzaSyBpwRWK4S_nPz6vaFmi1uJhWTOt7_1BII8",
     authDomain: "la-presion.firebaseapp.com",
@@ -317,17 +314,13 @@ const firebaseConfig = {
     measurementId: "G-121M0L9LQH"
 };
 
-// ============================================================
-// CONFIGURACIÓN CLOUDINARY
-// ============================================================
 const CLOUDINARY_CLOUD = "dx6t9oafd";
-const CLOUDINARY_UPLOAD_PRESET = "lapresion_unsigned"; // Lo vamos a crear
+const CLOUDINARY_UPLOAD_PRESET = "lapresion_unsigned";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Exponer funciones globalmente
 window._auth = auth;
 window._db = db;
 window._signInWithEmailAndPassword = signInWithEmailAndPassword;
@@ -341,7 +334,6 @@ window._arrayRemove = arrayRemove;
 window.CLOUDINARY_CLOUD = CLOUDINARY_CLOUD;
 window.CLOUDINARY_UPLOAD_PRESET = CLOUDINARY_UPLOAD_PRESET;
 
-// Auth state
 onAuthStateChanged(auth, (user) => {
     if (user) {
         document.getElementById('login-screen').style.display = 'none';
@@ -356,6 +348,18 @@ onAuthStateChanged(auth, (user) => {
 </script>
 
 <script>
+// ============================================================
+// HELPERS
+// ============================================================
+function ensureProtocol(url) {
+    if (!url) return url;
+    url = url.trim();
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'https://' + url;
+    }
+    return url;
+}
+
 // ============================================================
 // LOGIN / LOGOUT
 // ============================================================
@@ -375,7 +379,6 @@ async function doLogout() {
     await window._signOut(window._auth);
 }
 
-// Enter key en login
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') {
         doLogin();
@@ -392,25 +395,17 @@ async function loadAllData() {
         const snap = await window._getDoc(docRef);
         if (snap.exists()) {
             const data = snap.data();
-
-            // Evento
             if (data.eventoFecha) document.getElementById('evento-fecha').value = data.eventoFecha;
             if (data.eventoLugar) document.getElementById('evento-lugar').value = data.eventoLugar;
-
-            // Links
             if (data.linkPassline) document.getElementById('link-passline').value = data.linkPassline;
             if (data.linkWhatsapp) document.getElementById('link-whatsapp').value = data.linkWhatsapp;
             if (data.linkInstagram) document.getElementById('link-instagram').value = data.linkInstagram;
             if (data.spotifyId) document.getElementById('spotify-id').value = data.spotifyId;
-
-            // Flyer
             if (data.flyerUrl) {
                 const img = document.getElementById('flyer-img-preview');
                 img.src = data.flyerUrl;
                 img.style.display = 'block';
             }
-
-            // Fotos
             if (data.fotos && data.fotos.length > 0) {
                 renderFotos(data.fotos);
             }
@@ -429,7 +424,6 @@ async function saveEvento() {
     const lugar = document.getElementById('evento-lugar').value.trim();
     if (!fecha || !lugar) { showToast('Completá fecha y lugar', 'error'); return; }
 
-    // Convertir fecha a texto legible
     const fechaObj = new Date(fecha + 'T12:00:00');
     const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -449,9 +443,9 @@ async function saveEvento() {
 // ============================================================
 async function saveLinks() {
     const data = {
-        linkPassline: document.getElementById('link-passline').value.trim(),
-        linkWhatsapp: document.getElementById('link-whatsapp').value.trim(),
-        linkInstagram: document.getElementById('link-instagram').value.trim(),
+        linkPassline: ensureProtocol(document.getElementById('link-passline').value.trim()),
+        linkWhatsapp: ensureProtocol(document.getElementById('link-whatsapp').value.trim()),
+        linkInstagram: ensureProtocol(document.getElementById('link-instagram').value.trim()),
         spotifyId: document.getElementById('spotify-id').value.trim(),
     };
     try {
@@ -483,11 +477,9 @@ async function uploadFlyer(input) {
         fillEl.style.width = '100%';
         textEl.textContent = '¡Listo!';
 
-        // Guardar en Firestore
         const docRef = window._doc(window._db, 'sitedata', 'config');
         await window._setDoc(docRef, { flyerUrl: url }, { merge: true });
 
-        // Preview
         const img = document.getElementById('flyer-img-preview');
         img.src = url;
         img.style.display = 'block';
@@ -526,13 +518,11 @@ async function uploadFotos(input) {
             const url = await uploadToCloudinary(file, 'galeria');
             const fotoData = { src: url, alt: `La Presión - Foto ${Date.now()}` };
 
-            // Obtener fotos actuales y agregar
             const snap = await window._getDoc(docRef);
             const fotos = snap.exists() && snap.data().fotos ? snap.data().fotos : [];
             fotos.push(fotoData);
             await window._setDoc(docRef, { fotos }, { merge: true });
 
-            // Re-renderizar
             renderFotos(fotos);
         } catch(e) {
             showToast(`Error subiendo ${file.name}`, 'error');
