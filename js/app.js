@@ -33,7 +33,8 @@ const DEFAULT_DATA = {
         { src: "assets/fotos-fiesta/foto2.jpg", alt: "La Presión - Fiesta 2" },
         { src: "assets/fotos-fiesta/foto3.jpg", alt: "La Presión - Fiesta 3" },
         { src: "assets/fotos-fiesta/foto4.jpg", alt: "La Presión - Fiesta 4" },
-        { src: "assets/fotos-fiesta/foto5.jpg", alt: "La Presión - Fiesta 5" }
+        { src: "assets/fotos-fiesta/foto5.jpg", alt: "La Presión - Fiesta 5" },
+        { src: "assets/fotos-fiesta/foto6.jpg", alt: "La Presión - Fiesta 6" }
     ],
     spotifyPlaylistId: "37i9dQZF1DXaXB8fQg7xif"
 };

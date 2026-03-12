@@ -12,7 +12,7 @@ const DEFAULT_DATA = {
     },
     proximoEvento: {
         fecha: "Sábado 22 de Marzo",
-        lugar: "Zona Oeste, CHN",
+        lugar: "CLUB LËVEL",
         flyerImg: "assets/img/flyer-proximo.jpg",
         linkEntradas: "https://www.passline.com/eventos/la-presion",
         linkMesasVIP: "https://wa.link/f1g89u"
@@ -20,14 +20,17 @@ const DEFAULT_DATA = {
     fotos: [
         { src: "assets/fotos-fiesta/foto1.jpg", alt: "La Presión - Fiesta 1" },
         { src: "assets/fotos-fiesta/foto2.jpg", alt: "La Presión - Fiesta 2" },
-        { src: "assets/fotos-fiesta/foto3.jpg", alt: "La Presión - Fiesta 3" }
+        { src: "assets/fotos-fiesta/foto3.jpg", alt: "La Presión - Fiesta 3" },
+        { src: "assets/fotos-fiesta/foto4.jpg", alt: "La Presión - Fiesta 4" },
+        { src: "assets/fotos-fiesta/foto5.jpg", alt: "La Presión - Fiesta 5" },
+        { src: "assets/fotos-fiesta/foto6.jpg", alt: "La Presión - Fiesta 6" }
     ],
-    spotifyPlaylistId: "37i9dQZF1DXaXB8fQg7xif",
+    spotifyPlaylistId: "6Y4sGJLKM3UE6CWpnrMCU1",
     textos: {
         heroTitle: "La Presión",
         heroTagline: "Reggaetón Na' Más",
         entradaTitle: "Adquirí Tu Entrada a La Presión",
-        entradaSub: "No te quedes afuera. Las entradas se agotan rápido."
+        entradaSub: "No te quiero presionar, pero nosotros siempre estamos Sold Out."
     }
 };
 
