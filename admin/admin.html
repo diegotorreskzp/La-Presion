@@ -375,6 +375,13 @@ const CLOUDINARY_UPLOAD_PRESET = "lapresion_unsigned";
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// ============================================================
+// RATE LIMITING — Protección contra fuerza bruta en login
+// ============================================================
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 2 * 60 * 1000; // 2 minutos en milisegundos
+let loginAttempts = 0;
+let lockoutUntil = 0;
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -445,14 +452,49 @@ function showConfirm(message) {
 // LOGIN / LOGOUT
 // ============================================================
 async function doLogin() {
+    const errEl = document.getElementById('login-error');
+    const btnLogin = document.getElementById('btn-login');
+    errEl.style.display = 'none';
+
+    // Verificar si está bloqueado
+    const now = Date.now();
+    if (now < lockoutUntil) {
+        const secsLeft = Math.ceil((lockoutUntil - now) / 1000);
+        errEl.textContent = `Demasiados intentos. Esperá ${secsLeft} segundos.`;
+        errEl.style.display = 'block';
+        return;
+    }
+
     const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-pass').value;
-    const errEl = document.getElementById('login-error');
-    errEl.style.display = 'none';
+
+    if (!email || !pass) {
+        errEl.textContent = 'Ingresá email y contraseña';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    // Deshabilitar botón mientras procesa
+    btnLogin.disabled = true;
+
     try {
         await signInWithEmailAndPassword(auth, email, pass);
+        // Login exitoso: resetear contador
+        loginAttempts = 0;
+        lockoutUntil = 0;
     } catch(e) {
+        loginAttempts++;
+        if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+            lockoutUntil = Date.now() + LOCKOUT_DURATION;
+            errEl.textContent = `Demasiados intentos. Login bloqueado por 2 minutos.`;
+            loginAttempts = 0;
+        } else {
+            const remaining = MAX_LOGIN_ATTEMPTS - loginAttempts;
+            errEl.textContent = `Email o contraseña incorrectos (${remaining} intentos restantes)`;
+        }
         errEl.style.display = 'block';
+    } finally {
+        btnLogin.disabled = false;
     }
 }
 
