@@ -176,6 +176,36 @@
             animation:spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Modal de confirmación personalizado */
+        .confirm-modal {
+            position:fixed; inset:0; background:rgba(10,10,10,0.85);
+            display:none; align-items:center; justify-content:center;
+            z-index:10000;
+        }
+        .confirm-modal.active { display:flex; }
+        .confirm-modal__card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:12px; padding:32px; max-width:400px; width:90%;
+            text-align:center;
+        }
+        .confirm-modal__card p {
+            font-size:1rem; margin-bottom:24px; color:var(--text);
+        }
+        .confirm-modal__buttons { display:flex; gap:12px; justify-content:center; }
+        .confirm-modal__btn {
+            padding:10px 24px; border-radius:8px; cursor:pointer;
+            font-family:'Montserrat',sans-serif; font-size:0.85rem; font-weight:600;
+            transition:all 0.3s; border:none;
+        }
+        .confirm-modal__btn--cancel {
+            background:var(--surface2); color:var(--text); border:1px solid var(--border);
+        }
+        .confirm-modal__btn--cancel:hover { background:#333; }
+        .confirm-modal__btn--confirm {
+            background:var(--red); color:#fff;
+        }
+        .confirm-modal__btn--confirm:hover { background:var(--red-light); }
     </style>
 </head>
 <body>
@@ -193,7 +223,7 @@
             <label>Contraseña</label>
             <input type="password" id="login-pass" placeholder="••••••••">
         </div>
-        <button class="btn-login" onclick="doLogin()">Ingresar</button>
+        <button class="btn-login" id="btn-login">Ingresar</button>
         <p class="login-error" id="login-error">Email o contraseña incorrectos</p>
     </div>
 </div>
@@ -205,7 +235,7 @@
             <h1>Panel Admin — La Presión</h1>
             <span id="admin-email-display"></span>
         </div>
-        <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+        <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
     </div>
 
     <div class="admin-content">
@@ -224,7 +254,7 @@
                 </div>
             </div>
             <div class="save-row">
-                <button class="btn-save" onclick="saveEvento()">💾 Guardar evento</button>
+                <button class="btn-save" id="btn-save-evento">💾 Guardar evento</button>
                 <span class="save-msg" id="msg-evento"></span>
             </div>
         </div>
@@ -251,7 +281,7 @@
                 </div>
             </div>
             <div class="save-row">
-                <button class="btn-save" onclick="saveLinks()">💾 Guardar links</button>
+                <button class="btn-save" id="btn-save-links">💾 Guardar links</button>
                 <span class="save-msg" id="msg-links"></span>
             </div>
         </div>
@@ -263,9 +293,9 @@
                 <img id="flyer-img-preview" src="" alt="Flyer actual" style="display:none">
             </div>
             <div class="upload-area" id="flyer-upload-area">
-                <input type="file" id="flyer-file" accept="image/*" onchange="uploadFlyer(this)">
+                <input type="file" id="flyer-file" accept="image/jpeg,image/png,image/webp">
                 <div class="upload-icon">📸</div>
-                <p>Hacé clic o arrastrá el flyer acá<br><small>JPG, PNG — máx 5MB</small></p>
+                <p>Hacé clic o arrastrá el flyer acá<br><small>JPG, PNG, WebP — máx 5MB</small></p>
             </div>
             <div class="upload-progress" id="flyer-progress">
                 <div class="progress-bar"><div class="progress-fill" id="flyer-progress-fill"></div></div>
@@ -278,9 +308,9 @@
             <h2>📷 Galería de Fotos</h2>
             <div class="fotos-grid" id="fotos-grid"></div>
             <div class="upload-area">
-                <input type="file" id="fotos-files" accept="image/*" multiple onchange="uploadFotos(this)">
+                <input type="file" id="fotos-files" accept="image/jpeg,image/png,image/webp" multiple>
                 <div class="upload-icon">📁</div>
-                <p>Subir fotos a la galería (podés seleccionar varias)<br><small>JPG, PNG — máx 5MB cada una</small></p>
+                <p>Subir fotos a la galería (podés seleccionar varias)<br><small>JPG, PNG, WebP — máx 5MB cada una</small></p>
             </div>
             <div class="upload-progress" id="fotos-progress">
                 <div class="progress-bar"><div class="progress-fill" id="fotos-progress-fill"></div></div>
@@ -295,15 +325,31 @@
 <div class="toast" id="toast"></div>
 <!-- Loading -->
 <div class="loading" id="loading"><div class="spinner"></div></div>
+<!-- Modal de confirmación (reemplaza confirm() nativo) -->
+<div class="confirm-modal" id="confirm-modal">
+    <div class="confirm-modal__card">
+        <p id="confirm-modal-text">¿Estás seguro?</p>
+        <div class="confirm-modal__buttons">
+            <button class="confirm-modal__btn confirm-modal__btn--cancel" id="confirm-modal-cancel">Cancelar</button>
+            <button class="confirm-modal__btn confirm-modal__btn--confirm" id="confirm-modal-ok">Eliminar</button>
+        </div>
+    </div>
+</div>
 
-<!-- Firebase SDK -->
+<!-- ============================================================
+     TODO EL JAVASCRIPT EN UN ÚNICO SCRIPT TYPE="MODULE"
+     Ya no hay window._ ni onclick inline
+     ============================================================ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove }
+import { getFirestore, doc, getDoc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// ============================================================
+// CONFIGURACIÓN (ya no se expone nada en window)
+// ============================================================
 const firebaseConfig = {
     apiKey: "AIzaSyBpwRWK4S_nPz6vaFmi1uJhWTOt7_1BII8",
     authDomain: "la-presion.firebaseapp.com",
@@ -316,38 +362,13 @@ const firebaseConfig = {
 
 const CLOUDINARY_CLOUD = "dx6t9oafd";
 const CLOUDINARY_UPLOAD_PRESET = "lapresion_unsigned";
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window._auth = auth;
-window._db = db;
-window._signInWithEmailAndPassword = signInWithEmailAndPassword;
-window._signOut = signOut;
-window._doc = doc;
-window._getDoc = getDoc;
-window._setDoc = setDoc;
-window._updateDoc = updateDoc;
-window._arrayUnion = arrayUnion;
-window._arrayRemove = arrayRemove;
-window.CLOUDINARY_CLOUD = CLOUDINARY_CLOUD;
-window.CLOUDINARY_UPLOAD_PRESET = CLOUDINARY_UPLOAD_PRESET;
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        document.getElementById('admin-email-display').textContent = user.email;
-        loadAllData();
-    } else {
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('admin-panel').style.display = 'none';
-    }
-});
-</script>
-
-<script>
 // ============================================================
 // HELPERS
 // ============================================================
@@ -360,6 +381,56 @@ function ensureProtocol(url) {
     return url;
 }
 
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => { toast.className = 'toast'; }, 3500);
+}
+
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
+
+/** Validación de archivo de imagen */
+function validateImageFile(file) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        showToast(`"${file.name}" no es un formato válido. Solo JPG, PNG o WebP.`, 'error');
+        return false;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+        showToast(`"${file.name}" es muy grande (máx 5MB)`, 'error');
+        return false;
+    }
+    return true;
+}
+
+/** Modal de confirmación personalizado (reemplaza confirm() nativo) */
+function showConfirm(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const textEl = document.getElementById('confirm-modal-text');
+        const btnCancel = document.getElementById('confirm-modal-cancel');
+        const btnOk = document.getElementById('confirm-modal-ok');
+
+        textEl.textContent = message;
+        modal.classList.add('active');
+
+        function cleanup(result) {
+            modal.classList.remove('active');
+            btnCancel.removeEventListener('click', onCancel);
+            btnOk.removeEventListener('click', onConfirm);
+            resolve(result);
+        }
+
+        function onCancel() { cleanup(false); }
+        function onConfirm() { cleanup(true); }
+
+        btnCancel.addEventListener('click', onCancel);
+        btnOk.addEventListener('click', onConfirm);
+    });
+}
+
 // ============================================================
 // LOGIN / LOGOUT
 // ============================================================
@@ -369,21 +440,15 @@ async function doLogin() {
     const errEl = document.getElementById('login-error');
     errEl.style.display = 'none';
     try {
-        await window._signInWithEmailAndPassword(window._auth, email, pass);
+        await signInWithEmailAndPassword(auth, email, pass);
     } catch(e) {
         errEl.style.display = 'block';
     }
 }
 
 async function doLogout() {
-    await window._signOut(window._auth);
+    await signOut(auth);
 }
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') {
-        doLogin();
-    }
-});
 
 // ============================================================
 // CARGAR DATOS
@@ -391,8 +456,8 @@ document.addEventListener('keydown', (e) => {
 async function loadAllData() {
     showLoading(true);
     try {
-        const docRef = window._doc(window._db, 'sitedata', 'config');
-        const snap = await window._getDoc(docRef);
+        const docRef = doc(db, 'sitedata', 'config');
+        const snap = await getDoc(docRef);
         if (snap.exists()) {
             const data = snap.data();
             if (data.eventoFecha) document.getElementById('evento-fecha').value = data.eventoFecha;
@@ -430,8 +495,8 @@ async function saveEvento() {
     const fechaTexto = `${dias[fechaObj.getDay()]} ${fechaObj.getDate()} de ${meses[fechaObj.getMonth()]}`;
 
     try {
-        const docRef = window._doc(window._db, 'sitedata', 'config');
-        await window._setDoc(docRef, { eventoFecha: fecha, eventoLugar: lugar, eventoFechaTexto: fechaTexto }, { merge: true });
+        const docRef = doc(db, 'sitedata', 'config');
+        await setDoc(docRef, { eventoFecha: fecha, eventoLugar: lugar, eventoFechaTexto: fechaTexto }, { merge: true });
         showToast('✅ Evento guardado');
     } catch(e) {
         showToast('Error guardando', 'error');
@@ -449,8 +514,8 @@ async function saveLinks() {
         spotifyId: document.getElementById('spotify-id').value.trim(),
     };
     try {
-        const docRef = window._doc(window._db, 'sitedata', 'config');
-        await window._setDoc(docRef, data, { merge: true });
+        const docRef = doc(db, 'sitedata', 'config');
+        await setDoc(docRef, data, { merge: true });
         showToast('✅ Links guardados');
     } catch(e) {
         showToast('Error guardando', 'error');
@@ -458,12 +523,30 @@ async function saveLinks() {
 }
 
 // ============================================================
-// SUBIR FLYER A CLOUDINARY
+// CLOUDINARY UPLOAD (con validación reforzada)
+// ============================================================
+async function uploadToCloudinary(file, folder) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', `lapresion/${folder}`);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    return data.secure_url;
+}
+
+// ============================================================
+// SUBIR FLYER
 // ============================================================
 async function uploadFlyer(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { showToast('El archivo es muy grande (máx 5MB)', 'error'); return; }
+    if (!validateImageFile(file)) { input.value = ''; return; }
 
     const progressEl = document.getElementById('flyer-progress');
     const fillEl = document.getElementById('flyer-progress-fill');
@@ -477,8 +560,8 @@ async function uploadFlyer(input) {
         fillEl.style.width = '100%';
         textEl.textContent = '¡Listo!';
 
-        const docRef = window._doc(window._db, 'sitedata', 'config');
-        await window._setDoc(docRef, { flyerUrl: url }, { merge: true });
+        const docRef = doc(db, 'sitedata', 'config');
+        await setDoc(docRef, { flyerUrl: url }, { merge: true });
 
         const img = document.getElementById('flyer-img-preview');
         img.src = url;
@@ -490,10 +573,11 @@ async function uploadFlyer(input) {
         showToast('Error subiendo flyer', 'error');
         progressEl.style.display = 'none';
     }
+    input.value = '';
 }
 
 // ============================================================
-// SUBIR FOTOS A CLOUDINARY
+// SUBIR FOTOS
 // ============================================================
 async function uploadFotos(input) {
     const files = Array.from(input.files);
@@ -504,11 +588,11 @@ async function uploadFotos(input) {
     const textEl = document.getElementById('fotos-progress-text');
     progressEl.style.display = 'block';
 
-    const docRef = window._doc(window._db, 'sitedata', 'config');
+    const docRef = doc(db, 'sitedata', 'config');
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} es muy grande, saltando...`, 'error'); continue; }
+        if (!validateImageFile(file)) continue;
 
         const pct = Math.round(((i + 0.5) / files.length) * 100);
         fillEl.style.width = pct + '%';
@@ -518,10 +602,10 @@ async function uploadFotos(input) {
             const url = await uploadToCloudinary(file, 'galeria');
             const fotoData = { src: url, alt: `La Presión - Foto ${Date.now()}` };
 
-            const snap = await window._getDoc(docRef);
+            const snap = await getDoc(docRef);
             const fotos = snap.exists() && snap.data().fotos ? snap.data().fotos : [];
             fotos.push(fotoData);
-            await window._setDoc(docRef, { fotos }, { merge: true });
+            await setDoc(docRef, { fotos }, { merge: true });
 
             renderFotos(fotos);
         } catch(e) {
@@ -537,17 +621,18 @@ async function uploadFotos(input) {
 }
 
 // ============================================================
-// ELIMINAR FOTO
+// ELIMINAR FOTO (usa modal personalizado en vez de confirm())
 // ============================================================
 async function deletePhoto(index) {
-    if (!confirm('¿Eliminar esta foto?')) return;
+    const confirmed = await showConfirm('¿Eliminar esta foto?');
+    if (!confirmed) return;
     try {
-        const docRef = window._doc(window._db, 'sitedata', 'config');
-        const snap = await window._getDoc(docRef);
+        const docRef = doc(db, 'sitedata', 'config');
+        const snap = await getDoc(docRef);
         if (!snap.exists()) return;
         const fotos = snap.data().fotos || [];
         fotos.splice(index, 1);
-        await window._setDoc(docRef, { fotos }, { merge: true });
+        await setDoc(docRef, { fotos }, { merge: true });
         renderFotos(fotos);
         showToast('✅ Foto eliminada');
     } catch(e) {
@@ -556,7 +641,7 @@ async function deletePhoto(index) {
 }
 
 // ============================================================
-// RENDER FOTOS
+// RENDER FOTOS (sin onclick inline)
 // ============================================================
 function renderFotos(fotos) {
     const grid = document.getElementById('fotos-grid');
@@ -564,54 +649,55 @@ function renderFotos(fotos) {
     fotos.forEach((foto, i) => {
         const div = document.createElement('div');
         div.className = 'foto-item';
-        div.innerHTML = `
-            <img src="${foto.src}" alt="${foto.alt}" loading="lazy">
-            <button class="btn-delete-foto" onclick="deletePhoto(${i})" title="Eliminar">×</button>
-        `;
+
+        const img = document.createElement('img');
+        img.src = foto.src;
+        img.alt = foto.alt;
+        img.loading = 'lazy';
+
+        const btn = document.createElement('button');
+        btn.className = 'btn-delete-foto';
+        btn.title = 'Eliminar';
+        btn.textContent = '×';
+        btn.addEventListener('click', () => deletePhoto(i));
+
+        div.appendChild(img);
+        div.appendChild(btn);
         grid.appendChild(div);
     });
 }
 
 // ============================================================
-// CLOUDINARY UPLOAD
+// EVENT LISTENERS (reemplazan todos los onclick inline)
 // ============================================================
-async function uploadToCloudinary(file, folder) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', window.CLOUDINARY_UPLOAD_PRESET);
-    formData.append('folder', `lapresion/${folder}`);
+document.getElementById('btn-login').addEventListener('click', doLogin);
+document.getElementById('btn-logout').addEventListener('click', doLogout);
+document.getElementById('btn-save-evento').addEventListener('click', saveEvento);
+document.getElementById('btn-save-links').addEventListener('click', saveLinks);
+document.getElementById('flyer-file').addEventListener('change', function() { uploadFlyer(this); });
+document.getElementById('fotos-files').addEventListener('change', function() { uploadFotos(this); });
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${window.CLOUDINARY_CLOUD}/image/upload`, {
-        method: 'POST',
-        body: formData
-    });
-    if (!res.ok) throw new Error('Upload failed');
-    const data = await res.json();
-    return data.secure_url;
-}
+// Enter para login
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') {
+        doLogin();
+    }
+});
 
 // ============================================================
-// UI HELPERS
+// AUTH STATE — Mostrar/ocultar panel según login
 // ============================================================
-function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.className = `toast show ${type}`;
-    setTimeout(() => { toast.className = 'toast'; }, 3500);
-}
-
-function showLoading(show) {
-    document.getElementById('loading').style.display = show ? 'flex' : 'none';
-}
-
-// Exponer funciones globales
-window.doLogin = doLogin;
-window.doLogout = doLogout;
-window.saveEvento = saveEvento;
-window.saveLinks = saveLinks;
-window.uploadFlyer = uploadFlyer;
-window.uploadFotos = uploadFotos;
-window.deletePhoto = deletePhoto;
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('admin-email-display').textContent = user.email;
+        loadAllData();
+    } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('admin-panel').style.display = 'none';
+    }
+});
 </script>
 </body>
 </html>
